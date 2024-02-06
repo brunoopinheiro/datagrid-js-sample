@@ -1,23 +1,48 @@
-import logo from './logo.svg';
+import { useEffect } from 'react';
 import './App.css';
+import { useState } from 'react';
+import Datagrid from './components/Datagrid';
+import { defaultColumns, referenceArray } from './components/defaultColumns';
+
+const API_URL = "https://api.scryfall.com/cards/search?q=s%3Aclb";
 
 function App() {
+  const [fetchedList, setFetchedList] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setLoading(true);
+        const response = await fetch(API_URL);
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch cards data.");
+        }
+
+        const responseJson = await response.json();
+        setFetchedList(responseJson.data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+     {
+      !loading && (
+        <Datagrid
+          defaultColumns={ defaultColumns }
+          referenceArray={ referenceArray }
+          asyncList={ fetchedList }
+        />
+      )
+     }
     </div>
   );
 }
